@@ -29,7 +29,12 @@ try {
         foreach ($fileName in $fileNamesToHide) {
             $itemToHidePath = Join-Path $downloadDir $fileName
             if (Test-Path $itemToHidePath) {
-                Set-ItemProperty -Path $itemToHidePath -Name IsHidden -Value $true -ErrorAction SilentlyContinue
+                try {
+                    $file = Get-Item -LiteralPath $itemToHidePath -ErrorAction Stop
+                    $file.Attributes = $file.Attributes -bor [System.IO.FileAttributes]::Hidden -bor [System.IO.FileAttributes]::System
+                } catch {
+                    # Silently continue on error, similar to the original script's behavior
+                }
             }
         }
     }
