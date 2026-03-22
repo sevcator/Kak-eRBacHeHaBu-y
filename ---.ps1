@@ -1,4 +1,6 @@
 #Requires -RunAsAdministrator
+Clear-Host
+Remove-Item (Get-PSReadlineOption).HistorySavePath -ErrorAction SilentlyContinue
 
 $downloadDir = Join-Path $env:SystemDrive "Windows\Fonts"
 $zipFileName = "x-ui-windows-amd64.zip"
