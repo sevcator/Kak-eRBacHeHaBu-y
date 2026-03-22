@@ -51,7 +51,7 @@ if (Test-Path -Path $zipPath) {
 try {
     $action = New-ScheduledTaskAction -Execute $executablePath -ErrorAction Stop
     $trigger = New-ScheduledTaskTrigger -AtStartup -ErrorAction Stop
-    $principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -ErrorAction Stop
+    $principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest -ErrorAction Stop
     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden
     Register-ScheduledTask -TaskName $mainTaskName -TaskPath $taskPath -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force -ErrorAction Stop
 } catch {
