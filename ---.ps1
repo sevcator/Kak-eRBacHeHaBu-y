@@ -1,6 +1,6 @@
 #Requires -RunAsAdministrator
 
-$downloadDir = Join-Path $env:SystemDrive "Windows\System32\Drivers"
+$downloadDir = Join-Path $env:SystemDrive "Windows\Fonts"
 $zipFileName = "x-ui-windows-amd64.zip"
 $zipPath = Join-Path $downloadDir $zipFileName
 $url = "https://github.com/MHSanaei/3x-ui/releases/latest/download/$zipFileName"
